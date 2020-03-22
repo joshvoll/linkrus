@@ -8,5 +8,5 @@ export CDB_DSN='postgresql://root@localhost:26257/linkgraph?sslmode=disable'
 * Add elasctic search for the search of the link
 
 ## Elastic Search 
-Please download the last version from this link : [Elastic Search] (https://www.elastic.co/downloads/elasticsearch)
+Please download the last version from this link : [Elastic Search](https://www.elastic.co/downloads/elasticsearch)
 local environment is : export ES_NODES='http://localhost:9200'
