@@ -39,7 +39,7 @@ type EdgeIterator interface {
 	Iterator
 
 	// Edge return the current edge fetch by the object
-	Edge() error
+	Edge() *Edge
 }
 
 // Edge describe the graph each that origin from src.
@@ -70,5 +70,5 @@ type Graph interface {
 	// rnage is update before provide a timestamp
 	Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
 	// RemoveStaledges remove any edges from the origin specifications
-	RemoveStaledges(fromID, toID uuid.UUID, udpatedBefore time.Time) error
+	RemoveStalEdges(fromID, toID uuid.UUID, udpatedBefore time.Time) error
 }
