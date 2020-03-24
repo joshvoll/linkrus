@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -23,10 +24,20 @@ type InMemoryGraph struct {
 	linkEdgeMap  map[uuid.UUID]edgeList
 }
 
+// NewInMemoryGraph  create a new in-memory link graph
+func NewInMemoryGraph() *InMemoryGraph {
+	return &InMemoryGraph{
+		links:        make(map[uuid.UUID]*graph.Link),
+		edges:        make(map[uuid.UUID]*graph.Edge),
+		linkURLIndex: make(map[string]*graph.Link),
+		linkEdgeMap:  make(map[uuid.UUID]edgeList),
+	}
+}
+
 // UpsertLink creates a new link or updates a existing one.
 // check if the link with the same url already exits. if so convert this as update and point that to an existing link
 // Assign new ID and insert the link
-func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
+func (s *InMemoryGraph) UpsertLink(ctx context.Context, link *graph.Link) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if existing := s.linkURLIndex[link.URL]; existing != nil {
@@ -51,7 +62,7 @@ func (s *InMemoryGraph) UpsertLink(link *graph.Link) error {
 }
 
 // FindLink find the links for specific id.
-func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
+func (s *InMemoryGraph) FindLink(ctx context.Context, id uuid.UUID) (*graph.Link, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	link := s.links[id]
@@ -66,7 +77,7 @@ func (s *InMemoryGraph) FindLink(id uuid.UUID) (*graph.Link, error) {
 
 // Links return an iterator for the set of links whose IDs belong to.
 // [fromID, toID] range is retrieved
-func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error) {
+func (s *InMemoryGraph) Links(ctx context.Context, fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error) {
 	from, to := fromID.String(), toID.String()
 	s.mu.RLock()
 	var list []*graph.Link
@@ -84,7 +95,7 @@ func (s *InMemoryGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time)
 }
 
 // Edges return an iteractor from the edge vertex id
-func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updateBefore time.Time) (graph.EdgeIterator, error) {
+func (s *InMemoryGraph) Edges(ctx context.Context, fromID, toID uuid.UUID, updateBefore time.Time) (graph.EdgeIterator, error) {
 	from, to := fromID.String(), toID.String()
 	s.mu.RLock()
 	var list []*graph.Edge
@@ -109,7 +120,7 @@ func (s *InMemoryGraph) Edges(fromID, toID uuid.UUID, updateBefore time.Time) (g
 
 // UpsertEdge create a new edge or update for the existing one
 // insert new edge to the memory
-func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
+func (s *InMemoryGraph) UpsertEdge(ctx context.Context, edge *graph.Edge) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, srcExists := s.links[edge.Src]
@@ -142,7 +153,7 @@ func (s *InMemoryGraph) UpsertEdge(edge *graph.Edge) error {
 
 // RemoveStalEdges remove any edges specific from the link ID
 // update before specific update
-func (s *InMemoryGraph) RemoveStalEdges(fromID, toID uuid.UUID, updatedBefore time.Time) error {
+func (s *InMemoryGraph) RemoveStalEdges(ctx context.Context, fromID, toID uuid.UUID, updatedBefore time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var newEdgelist edgeList

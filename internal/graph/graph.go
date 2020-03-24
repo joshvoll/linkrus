@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,18 +58,18 @@ type Edge struct {
 // Graph contain the core logic of the application
 type Graph interface {
 	// UpsertLink create a new link or update an existing one.
-	UpsertLink(link *Link) error
+	UpsertLink(ctx context.Context, link *Link) error
 	// FindLink look up and link base on the ide
-	FindLink(id uuid.UUID) (*Link, error)
+	FindLink(ctx context.Context, id uuid.UUID) (*Link, error)
 	// Links return all the link base on a iterator who ide belong to that particular link
 	// [fromID, toID] range can be retrieved
-	Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (LinkIterator, error)
+	Links(ctx context.Context, fromID, toID uuid.UUID, retrievedBefore time.Time) (LinkIterator, error)
 	// UpsertEdge create a new edge or update a exsiting ne
-	UpsertEdge(edge *Edge) error
+	UpsertEdge(ctx context.Context, edge *Edge) error
 	// Edges return all the edges that are belong for the particular edage
 	// the source is on vertex id [fromID, toID]
 	// rnage is update before provide a timestamp
-	Edges(fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
+	Edges(ctx context.Context, fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
 	// RemoveStaledges remove any edges from the origin specifications
-	RemoveStalEdges(fromID, toID uuid.UUID, udpatedBefore time.Time) error
+	RemoveStalEdges(ctx context.Context, fromID, toID uuid.UUID, udpatedBefore time.Time) error
 }
