@@ -25,7 +25,7 @@ func (s *SuiteBase) SetGraph(g graph.Graph) {
 func (s *SuiteBase) TestUpsertLink(c *gc.C) {
 	ctx := context.Background()
 	originalLink := &graph.Link{
-		URL:         "https://www.sandals.com",
+		URL:         "https://www.beaches.com",
 		RetrievedAt: time.Now().Add(-10 * time.Hour),
 	}
 	err := s.g.UpsertLink(ctx, originalLink)
@@ -50,4 +50,28 @@ func (s *SuiteBase) TestFindLink(c *gc.C) {
 	c.Assert(link, gc.DeepEquals, link, gc.Commentf("look by link.ID returning the wrong id"))
 	fmt.Println("LINK: ", link)
 
+}
+
+// TestUpsertEdge just going to update edges to the databae
+func (s *SuiteBase) TestUpsertEdge(c *gc.C) {
+	ctx := context.Background()
+	// createing the link
+	linkUUIDs := make([]uuid.UUID, 3)
+	for i := 0; i < 3; i++ {
+		link := &graph.Link{
+			URL: fmt.Sprint(i),
+		}
+		c.Assert(s.g.UpsertLink(ctx, link), gc.IsNil)
+		linkUUIDs[i] = link.ID
+
+	}
+	// creating the edge
+	edge := &graph.Edge{
+		Src: linkUUIDs[0],
+		Dst: linkUUIDs[1],
+	}
+	err := s.g.UpsertEdge(ctx, edge)
+	c.Assert(err, gc.IsNil)
+	c.Assert(edge.ID, gc.Not(gc.Equals), uuid.Nil, gc.Commentf("expected a edgeID to be assing to the new edge"))
+	c.Assert(edge.UpdateAt.IsZero(), gc.Equals, false, gc.Commentf("UpdateAt field not setup"))
 }

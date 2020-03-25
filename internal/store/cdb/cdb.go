@@ -20,10 +20,11 @@ var (
 	linkInPartitionQuery = "SELECT id, url, retrieved_at FROM links WHERE id >= $1 AND id < $2 AND retrieved_at < $3"
 
 	upsertEdgeQuery = `
-	    INSERT INTO edges (src, dst, updated_at) VALUES ($1, $2)
+	    INSERT INTO edges (src, dst, updated_at) VALUES ($1, $2, NOW())
 	    ON CONFLICT (src, dst) DO UPDATE SET updated_at=NOW()
 	    RETURNING id, updated_at`
 	edgesInPartitionQuery = "SELECT id, src, dst, updated_at FROM edges WHERE src >= $1 AND src < $2 AND updated_at < $3"
+	removeStaleEdgesQuery = "DELETE FROM edges WHERE src=$1 AND updated_at < $2"
 )
 
 // CockroachDBGraph struct definition implemente the graph persistence layer
@@ -85,7 +86,7 @@ func (s *CockroachDBGraph) Links(ctx context.Context, fromID, toID uuid.UUID, re
 
 // UpsertEdge create a new edge or update an existing one.
 func (s *CockroachDBGraph) UpsertEdge(ctx context.Context, edge *graph.Edge) error {
-	if err := s.db.QueryRowContext(ctx, upsertEdgeQuery, edge).Scan(&edge.ID, &edge.UpdateAt); err != nil {
+	if err := s.db.QueryRowContext(ctx, upsertEdgeQuery, edge.Src, edge.Dst).Scan(&edge.ID, &edge.UpdateAt); err != nil {
 		if isForeignKeyViolation(err) {
 			err = graph.ErrUnknownEdgeLinks
 		}
@@ -106,6 +107,15 @@ func (s *CockroachDBGraph) Edges(ctx context.Context, fromID, toID uuid.UUID, up
 	return &edgeIterator{
 		rows: rows,
 	}, nil
+}
+
+// RemoveStalEdges remove any edges from the origin specification
+func (s *CockroachDBGraph) RemoveStalEdges(ctx context.Context, fromID uuid.UUID, updatedBefore time.Time) error {
+	_, err := s.db.Exec(removeStaleEdgesQuery, fromID, updatedBefore.UTC())
+	if err != nil {
+		return xerrors.Errorf("remove stale edges: %w ", err)
+	}
+	return nil
 }
 
 // isForeignKeyViolatione returns true if there is a foreign key violation constrain violation

@@ -71,5 +71,5 @@ type Graph interface {
 	// rnage is update before provide a timestamp
 	Edges(ctx context.Context, fromID, toID uuid.UUID, updatedBefore time.Time) (EdgeIterator, error)
 	// RemoveStaledges remove any edges from the origin specifications
-	RemoveStalEdges(ctx context.Context, fromID, toID uuid.UUID, udpatedBefore time.Time) error
+	RemoveStalEdges(ctx context.Context, fromID uuid.UUID, udpatedBefore time.Time) error
 }
