@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/joshvoll/linkrus/internal/graph"
+	"github.com/joshvoll/linkrus/internal/linkgraph/graph"
 	"golang.org/x/xerrors"
 )
 
@@ -153,7 +153,7 @@ func (s *InMemoryGraph) UpsertEdge(ctx context.Context, edge *graph.Edge) error 
 
 // RemoveStalEdges remove any edges specific from the link ID
 // update before specific update
-func (s *InMemoryGraph) RemoveStalEdges(ctx context.Context, fromID, toID uuid.UUID, updatedBefore time.Time) error {
+func (s *InMemoryGraph) RemoveStalEdges(ctx context.Context, fromID uuid.UUID, updatedBefore time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var newEdgelist edgeList

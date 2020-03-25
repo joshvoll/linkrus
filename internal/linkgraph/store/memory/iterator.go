@@ -1,6 +1,6 @@
 package memory
 
-import "github.com/joshvoll/linkrus/internal/graph"
+import "github.com/joshvoll/linkrus/internal/linkgraph/graph"
 
 // linkIterator  struct definition
 type linkIterator struct {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/joshvoll/linkrus/internal/graph/graphtest"
+	"github.com/joshvoll/linkrus/internal/linkgraph/graph/graphtest"
 	gc "gopkg.in/check.v1"
 )
 

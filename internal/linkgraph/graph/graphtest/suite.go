@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/joshvoll/linkrus/internal/graph"
+	"github.com/joshvoll/linkrus/internal/linkgraph/graph"
 	gc "gopkg.in/check.v1"
 )
 

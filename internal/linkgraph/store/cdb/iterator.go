@@ -3,7 +3,7 @@ package cdb
 import (
 	"database/sql"
 
-	"github.com/joshvoll/linkrus/internal/graph"
+	"github.com/joshvoll/linkrus/internal/linkgraph/graph"
 )
 
 // linkIterator implements the graph.LinkIterator interface
