@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -26,6 +27,7 @@ type InMemoryGraph struct {
 
 // NewInMemoryGraph  create a new in-memory link graph
 func NewInMemoryGraph() *InMemoryGraph {
+	fmt.Println("hello from memory")
 	return &InMemoryGraph{
 		links:        make(map[uuid.UUID]*graph.Link),
 		edges:        make(map[uuid.UUID]*graph.Edge),

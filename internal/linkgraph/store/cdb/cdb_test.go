@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"testing"
 
@@ -24,7 +25,8 @@ func Test(t *testing.T) {
 func (s *CockroachDBGraphTestSuite) SetUpSuite(c *gc.C) {
 	dsn := os.Getenv("CDB_DSN")
 	if dsn == "" {
-		c.Skip("Missing CDB_DSN envvar; skipping cockroachdb-backed graph test suite")
+		//c.Skip("Missing CDB_DSN envvar; skipping cockroachdb-backed graph test suite")
+		fmt.Println("cannot find CDB_DSN")
 	}
 	g, err := NewCockroachDBGraph(dsn)
 	c.Assert(err, gc.IsNil)
@@ -34,6 +36,7 @@ func (s *CockroachDBGraphTestSuite) SetUpSuite(c *gc.C) {
 
 func (s *CockroachDBGraphTestSuite) SetUpTest(c *gc.C) {
 	s.flushDB(c)
+	fmt.Println("hello")
 }
 
 func (s *CockroachDBGraphTestSuite) TearDownSuite(c *gc.C) {
@@ -44,8 +47,10 @@ func (s *CockroachDBGraphTestSuite) TearDownSuite(c *gc.C) {
 }
 
 func (s *CockroachDBGraphTestSuite) flushDB(c *gc.C) {
-	_, err := s.db.Exec("DELETE FROM links")
-	c.Assert(err, gc.IsNil)
-	_, err = s.db.Exec("DELETE FROM edges")
-	c.Assert(err, gc.IsNil)
+	/*
+		_, err := s.db.Exec("DELETE FROM links")
+		c.Assert(err, gc.IsNil)
+		_, err = s.db.Exec("DELETE FROM edges")
+		c.Assert(err, gc.IsNil)
+	*/
 }
