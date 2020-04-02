@@ -15,7 +15,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// indexName is the name of the elasticsearch index to use
 const indexName = "textindexer"
+
+// batchSize is the size result for each query cached locally
+const batchSize = 10
 
 var esMappings = `
 {
@@ -166,6 +170,68 @@ func (i *ElasticSearchIndexer) FindByID(linkID uuid.UUID) (*index.Document, erro
 		return nil, xerrors.Errorf("search hits : %w ", err)
 	}
 	return mapEsDoc(&searchRes.Hits.HitList[0].DocSource), nil
+}
+
+// Search the index for a particular query and return back the results
+// these result can be multiple queries
+func (i *ElasticSearchIndexer) Search(q index.Query) (index.Iterator, error) {
+	var querytype string
+	switch q.Type {
+	case index.QueryTypeFrase:
+		querytype = "phrase"
+	default:
+		querytype = "best_fields"
+	}
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"function_score": map[string]interface{}{
+				"query": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"type":   querytype,
+						"query":  q.Expression,
+						"fields": []string{"Title", "Content"},
+					},
+				},
+			},
+		},
+		"from": q.Offset,
+		"to":   batchSize,
+	}
+	searchRes, err := runSearch(i.es, query)
+	if err != nil {
+		return nil, xerrors.Errorf("search run search %w ", err)
+	}
+	return &esIterator{
+		es:        i.es,
+		searchReq: query,
+		rs:        searchRes,
+		cumIdx:    q.Offset,
+	}, nil
+}
+
+// UpdateScore updates the PageRank score from a document with specific link
+// if the linkid not exists with put a place holder with a new score
+func (i *ElasticSearchIndexer) UpdateScore(linkID uuid.UUID, score float64) error {
+	var buf bytes.Buffer
+	update := map[string]interface{}{
+		"doc": map[string]interface{}{
+			"LinkID":   linkID.String(),
+			"PageRank": score,
+		},
+		"doc_as_upsert": true,
+	}
+	if err := json.NewEncoder(&buf).Encode(update); err != nil {
+		return xerrors.Errorf("UpdateScore encode update: %w ", err)
+	}
+	res, err := i.es.Update(indexName, linkID.String(), &buf, i.refreshOpt)
+	if err != nil {
+		return xerrors.Errorf("update score updating %w ", err)
+	}
+	var updateRes esUpdateRes
+	if err = unmarshalResponse(res, &updateRes); err != nil {
+		return xerrors.Errorf("update score unmarshal: %w ", err)
+	}
+	return nil
 }
 
 // mapEsDoc helper function return the index.Document ready for work with elastic search
