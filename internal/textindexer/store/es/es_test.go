@@ -1,6 +1,7 @@
 package es
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -25,9 +26,11 @@ func Test(t *testing.T) {
 // SetUpSuite is the test for setting up de db
 func (s *ElasticSearchTestSuite) SetUpSuite(c *gc.C) {
 	nodeList := os.Getenv("ES_NODES")
+	fmt.Println("NODOS: ", nodeList)
 	if nodeList == "" {
 		c.Fatalf("Missing elastic search node, skipping elastic search backed index test suite : %v", nodeList)
 	}
+	fmt.Println("going to create the instance")
 	idx, err := NewElasticSearchIndexer(strings.Split(nodeList, ","), true)
 	c.Assert(err, gc.IsNil)
 	s.SetIndexer(idx)

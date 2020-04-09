@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joshvoll/linkrus/internal/textindexer/index"
+	"golang.org/x/xerrors"
 	gc "gopkg.in/check.v1"
 )
 
@@ -46,6 +47,22 @@ func (s *SuiteBase) TestIndexDocument(c *gc.C) {
 		URL: "http://wwww.sanservices.hn",
 	}
 	err = s.idx.Index(imconpliteDoc)
-	c.Assert(err, gc.IsNil)
+	c.Assert(xerrors.Is(err, index.ErrMissingLinkID), gc.Equals, true)
 
+}
+
+// TestFindByID verify the document look up
+func (s *SuiteBase) TestFindByID(c *gc.C) {
+	doc := &index.Document{
+		LinkID:    uuid.New(),
+		URL:       "https://obe.sandals.com",
+		Title:     "booking going in",
+		Content:   "just another booking",
+		IndexedAt: time.Now().Add(-12 * time.Hour).UTC(),
+	}
+	err := s.idx.Index(doc)
+	c.Assert(err, gc.IsNil)
+	got, err := s.idx.FindByID(doc.LinkID)
+	c.Assert(err, gc.IsNil)
+	c.Assert(got, gc.DeepEquals, doc, gc.Commentf("document returned by FindByID does not match inserted document"))
 }

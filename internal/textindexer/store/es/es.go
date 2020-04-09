@@ -21,6 +21,24 @@ const indexName = "textindexer"
 // batchSize is the size result for each query cached locally
 const batchSize = 10
 
+/*
+var esMappings = `
+{
+  "mappings" : {
+    "data":{
+	"properties": {
+	    "LinkID": {"type": "keyword"},
+	    "URL": {"type": "keyword"},
+            "Content": {"type": "text"},
+            "Title": {"type": "text"},
+	    "IndexedAt": {"type": "date"},
+            "PageRank": {"type": "double"}
+	}
+    }
+  }
+}`
+*/
+
 var esMappings = `
 {
   "mappings" : {
@@ -33,8 +51,7 @@ var esMappings = `
       "PageRank": {"type": "double"}
     }
   }
-}
-`
+}`
 
 // esSearchRes search query document definition
 type esSearchRes struct {
@@ -159,7 +176,7 @@ func (i *ElasticSearchIndexer) FindByID(linkID uuid.UUID) (*index.Document, erro
 		"from": 0,
 		"size": 1,
 	}
-	if err := json.NewDecoder(&buf).Decode(query); err != nil {
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, xerrors.Errorf("find by id  query: %w ", err)
 	}
 	searchRes, err := runSearch(i.es, query)
@@ -251,7 +268,7 @@ func mapEsDoc(d *esDoc) *index.Document {
 // perform the search query and check the error
 func runSearch(es *elasticsearch.Client, searchQuery map[string]interface{}) (*esSearchRes, error) {
 	var buf bytes.Buffer
-	if err := json.NewDecoder(&buf).Decode(searchQuery); err != nil {
+	if err := json.NewEncoder(&buf).Encode(searchQuery); err != nil {
 		return nil, xerrors.Errorf("run search: %w ", err)
 	}
 	res, err := es.Search(
