@@ -62,3 +62,17 @@ type StageRunner interface {
 	// - an error occurs while processing payloads.
 	Run(context.Context, StageParams)
 }
+
+// Source is implement by types generated payload instance wich can be use
+// as inputs to the Pipeline instance.
+type Source interface {
+	// Next fetch the next payload from the source. if no more items are available
+	// or an error occurs, call to Next return false
+	Next(context.Context) bool
+
+	// Payload return the next payload of the source
+	Payload() Payload
+
+	// Error return the last erro observed by the source
+	Error() error
+}

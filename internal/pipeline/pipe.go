@@ -1,5 +1,11 @@
 package pipeline
 
+import (
+	"context"
+
+	"golang.org/x/xerrors"
+)
+
 // workersParams model defintiion
 type workerParams struct {
 	stage int
@@ -23,4 +29,23 @@ func maybeEmitError(err error, errCha chan<- error) {
 	default:
 	}
 
+}
+
+// sourceWorker implements a worker that read Payload instance from the source
+// and push them to output channel, that used as an input for the first
+// stage of the pipeline
+// after all check errors
+func sourceWorker(ctx context.Context, source Source, outCh chan<- Payload, errCh chan<- error) {
+	for source.Next(ctx) {
+		payload := source.Payload()
+		select {
+		case outCh <- payload:
+		case <-ctx.Done():
+			return
+		}
+	}
+	if err := source.Error(); err != nil {
+		wrappedErr := xerrors.Errorf("pipeline sourceWorker: %w ", err)
+		maybeEmitError(wrappedErr, errCh)
+	}
 }
