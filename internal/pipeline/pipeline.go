@@ -76,3 +76,10 @@ type Source interface {
 	// Error return the last erro observed by the source
 	Error() error
 }
+
+// Sink operate implements by the tail of a pipelina
+type Sink interface {
+	// Consume process a Payload instance that has been emitted out of
+	// a pipeline instance.
+	Consume(context.Context, Payload) error
+}
