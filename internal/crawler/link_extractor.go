@@ -75,6 +75,23 @@ func ensureHasTrailingSlash(s string) string {
 	return s
 }
 
+// retainLink is goint to check the host of the link
+func (le linkExtractor) retainLink(srcHost string, link *url.URL) bool {
+	if link == nil {
+		return false // skip all link that could not be resolve
+	}
+	if link.Scheme != "http" && link.Scheme != "https" {
+		return false // skip all link without http protocols
+	}
+	if link.Hostname() == srcHost {
+		return true // no need to check for the private network
+	}
+	if isPrivate, err := le.netDetector.IsPrivate(link.Host); err != nil || isPrivate {
+		return false // skip link that resolve to private network
+	}
+	return true
+}
+
 // resolveURL expands target into an absolute URL using the following rules:
 // - targets starting with '//' are treated as absolute URLs that inherit the
 //   protocol from relTo.
