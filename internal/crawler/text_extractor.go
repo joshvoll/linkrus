@@ -22,7 +22,7 @@ type textExtractor struct {
 }
 
 // newTextExtractor constructor method
-func newTextExtactor() *textExtractor {
+func newTextExtractor() *textExtractor {
 	return &textExtractor{
 		policyPool: sync.Pool{
 			New: func() interface{} {

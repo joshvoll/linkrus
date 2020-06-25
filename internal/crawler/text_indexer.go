@@ -14,7 +14,7 @@ type textIndexer struct {
 }
 
 // newIndexer constructor function
-func newIndexer(indexer index.Indexer) *textIndexer {
+func newTextIndexer(indexer index.Indexer) *textIndexer {
 	return &textIndexer{
 		indexer: indexer,
 	}
