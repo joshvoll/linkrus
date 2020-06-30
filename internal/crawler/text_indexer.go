@@ -10,11 +10,11 @@ import (
 
 // textIndexer definition
 type textIndexer struct {
-	indexer index.Indexer
+	indexer Indexer
 }
 
 // newIndexer constructor function
-func newTextIndexer(indexer index.Indexer) *textIndexer {
+func newTextIndexer(indexer Indexer) *textIndexer {
 	return &textIndexer{
 		indexer: indexer,
 	}
@@ -30,7 +30,7 @@ func (i *textIndexer) Process(ctx context.Context, p pipeline.Payload) (pipeline
 		Content:   payload.TextContext,
 		IndexedAt: time.Now(),
 	}
-	if err := i.indexer.Index(doc); err != nil {
+	if err := i.indexer.Index(ctx, doc); err != nil {
 		return nil, err
 	}
 	return p, nil

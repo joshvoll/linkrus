@@ -10,10 +10,10 @@ import (
 
 // graphUpdater definition
 type graphUpdater struct {
-	updater graph.Graph
+	updater Graph
 }
 
-func newGraphUdater(updater graph.Graph) *graphUpdater {
+func newGraphUdater(updater Graph) *graphUpdater {
 	return &graphUpdater{
 		updater: updater,
 	}
