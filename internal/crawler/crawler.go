@@ -99,22 +99,29 @@ func assembleCrawlerPipeline(cfg Config) *pipeline.Pipeline {
 	)
 }
 
-// assembleCrawlerPipeline creates the various stages of a crawler pipeline
-// using the options in cfg and assembles them into a pipeline instance.
+// Crawl iterates linkIt and send each link through the crawler pipeline
+// returning the total count of links that went through the pipeline. Call to
+// Crawl block util the link iterator is exhausted, an error occurs or the
+// context is cancelled
+func (c *Crawler) Crawl(ctx context.Context, linkIt graph.LinkIterator) (int, error) {
+	sink := new(countingSink)
+	err := c.p.Process(ctx, &linkSource{linkIt: linkIt}, sink)
+	return sink.getCount(), err
+}
 
 // LinkSource going to implement the graph.LinkIterator
-type LinkSource struct {
+type linkSource struct {
 	linkIt graph.LinkIterator
 }
 
 // Error implemented by the iterator
-func (l *LinkSource) Error() error { return l.linkIt.Error() }
+func (l *linkSource) Error() error { return l.linkIt.Error() }
 
 // Next implemented by the iterarot
-func (l *LinkSource) Next(context.Context) bool { return l.linkIt.Next() }
+func (l *linkSource) Next(context.Context) bool { return l.linkIt.Next() }
 
 // Payload implemente the iterator
-func (l *LinkSource) Payload() pipeline.Payload {
+func (l *linkSource) Payload() pipeline.Payload {
 	link := l.linkIt.Link()
 	p := payloadPool.Get().(*crawlerPayload)
 	p.LinkID = link.ID
